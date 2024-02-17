@@ -1,6 +1,6 @@
 # Gravity
 
-<img align="right" alt="Gravity" src="https://github.com/4kkx/gravity/assets/77382767/214a6ea8-f6c8-493f-b53f-dd030e884803" width="300">
+<img align="right" alt="Gravity" src="https://github.com/ekkx/gravity/assets/77382767/214a6ea8-f6c8-493f-b53f-dd030e884803" width="300">
 
 Golang API wrapper for [Gravity](https://gravity.place/).
 
@@ -9,7 +9,7 @@ Golang API wrapper for [Gravity](https://gravity.place/).
 ### Installation
 
 ```sh
-go get github.com/4kkx/gravity
+go get github.com/ekkx/gravity
 ```
 
 ### Usage
@@ -17,7 +17,7 @@ go get github.com/4kkx/gravity
 Import the package into your project.
 
 ```go
-import "github.com/4kkx/gravity"
+import "github.com/ekkx/gravity"
 ```
 
 Construct a new Gravity client.
@@ -33,5 +33,5 @@ See Documentation and Examples below for more detailed information.
 Coming soon!
 
 <p align="center">
-  <img alt="Gravity" src="https://github.com/4kkx/gravity/assets/77382767/245ee6b8-c4e8-48cf-aaaf-0c9a11a21929">
+  <img alt="Gravity" src="https://github.com/ekkx/gravity/assets/77382767/245ee6b8-c4e8-48cf-aaaf-0c9a11a21929">
 </p>
