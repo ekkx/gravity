@@ -11,6 +11,5 @@ func newCommonService(g *Gravity) *CommonService {
 }
 
 func (s *CommonService) SaySomething(msg string) {
-	g := s.g
-	fmt.Println(g.State.credentials.identifier, msg)
+	fmt.Println(s.g.State.credentials.identifier, msg)
 }
