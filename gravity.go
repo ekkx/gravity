@@ -9,16 +9,28 @@ import (
 const VERSION = "0.0.0"
 
 type Gravity struct {
-	State  *State
-	Client *http.Client
+	State                  *State
+	ShouldRetryOnRateLimit bool
+	MaxRestRetries         int
+	Client                 *http.Client
+
+	Common *CommonService
 }
 
 func New(identifier string, password string) *Gravity {
 	g := &Gravity{
-		State:  NewState(identifier, password),
-		Client: &http.Client{Timeout: (20 * time.Second)},
+		State:                  NewState(identifier, password),
+		ShouldRetryOnRateLimit: true,
+		MaxRestRetries:         3,
+		Client:                 &http.Client{Timeout: 20 * time.Second},
 	}
+	g.init()
+
 	return g
+}
+
+func (g *Gravity) init() {
+	g.Common = newCommonService(g)
 }
 
 func (g *Gravity) SetHTTPClient(client *http.Client) {
