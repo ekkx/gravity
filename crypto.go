@@ -4,13 +4,18 @@ import (
 	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
+	"crypto/md5"
 	"encoding/base64"
+	"encoding/hex"
 	"fmt"
+	"sort"
+	"strconv"
 )
 
 const (
-	KEY = "baisimeji9262019"
-	IV  = "qrstuvwxyz123456"
+	KEY      = "baisimeji9262019"
+	IV       = "qrstuvwxyz123456"
+	T_SECRET = 999983
 )
 
 func pad(src []byte) []byte {
@@ -70,4 +75,30 @@ func decrypt(text string) (string, error) {
 	}
 
 	return string(unpadData), nil
+}
+
+func generateSignature(data map[string]string) (string, error) {
+	delete(data, "sign")
+	ts, err := strconv.Atoi(data["ts"])
+	if err != nil {
+		return "", err
+	}
+
+	data["t_secret"] = strconv.Itoa(ts % T_SECRET)
+	keys := make([]string, 0, len(data))
+	for k := range data {
+		keys = append(keys, k)
+	}
+
+	sort.Strings(keys)
+
+	text := ""
+	for _, k := range keys {
+		text += k + "=" + data[k]
+	}
+
+	hasher := md5.New()
+	hasher.Write([]byte(text))
+
+	return hex.EncodeToString(hasher.Sum(nil)), nil
 }
