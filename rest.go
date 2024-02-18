@@ -33,8 +33,8 @@ func unmarshal(data []byte, v interface{}) error {
 }
 
 type APIErrorMessage struct {
-	Errno  int         `json:"errno"`
-	Errmsg string      `json:"errmsg"`
+	ErrNo  int         `json:"errno"`
+	ErrMsg string      `json:"errmsg"`
 	Data   interface{} `json:"data"`
 }
 
@@ -93,7 +93,22 @@ func newRequestConfig(g *Gravity, req *http.Request) *RequestConfig {
 // It can be supplied as an argument to any REST method.
 type RequestOption func(cfg *RequestConfig)
 
-func (g *Gravity) RequestWithJSON(method string, url string, data interface{}, options ...RequestOption) (response []byte, err error) {
+func (g *Gravity) RequestWithQueryParam(method string, endpoint string, params map[string]string, options ...RequestOption) (response []byte, err error) {
+	u, err := url.Parse(endpoint)
+	if err != nil {
+		return
+	}
+
+	q := u.Query()
+	for k, v := range params {
+		q.Add(k, v)
+	}
+	u.RawQuery = q.Encode()
+
+	return g.request(method, u.String(), "", nil, options...)
+}
+
+func (g *Gravity) RequestWithJSON(method string, endpoint string, data interface{}, options ...RequestOption) (response []byte, err error) {
 	var body []byte
 	if data != nil {
 		body, err = json.Marshal(data)
@@ -102,25 +117,28 @@ func (g *Gravity) RequestWithJSON(method string, url string, data interface{}, o
 		}
 	}
 
-	return g.request(method, url, "application/json; charset=utf-8", body, options...)
+	return g.request(method, endpoint, "application/json; charset=utf-8", body, options...)
 }
 
-func (g *Gravity) RequestWithFormURLEncoded(method string, url string, data url.Values, options ...RequestOption) (response []byte, err error) {
+func (g *Gravity) RequestWithFormURLEncoded(method string, endpoint string, data url.Values, options ...RequestOption) (response []byte, err error) {
 	bodyReader := strings.NewReader(data.Encode())
 	body, err := io.ReadAll(bodyReader)
 	if err != nil {
 		return
 	}
-	return g.request(method, url, "application/x-www-form-urlencoded; charset=utf-8", body, options...)
+
+	return g.request(method, endpoint, "application/x-www-form-urlencoded; charset=utf-8", body, options...)
 }
 
-func (g *Gravity) request(method string, url string, contentType string, b []byte, options ...RequestOption) (response []byte, err error) {
-	req, err := http.NewRequest(method, url, bytes.NewBuffer(b))
+func (g *Gravity) request(method string, endpoint string, contentType string, b []byte, options ...RequestOption) (response []byte, err error) {
+	req, err := http.NewRequest(method, endpoint, bytes.NewBuffer(b))
 	if err != nil {
 		return
 	}
 
-	req.Header.Set("Content-Type", contentType)
+	if contentType != "" {
+		req.Header.Set("Content-Type", contentType)
+	}
 
 	cfg := newRequestConfig(g, req)
 	for _, opt := range options {
@@ -152,7 +170,7 @@ func (g *Gravity) request(method string, url string, contentType string, b []byt
 		if err != nil {
 			return
 		}
-		if msg.Errno != 0 {
+		if msg.ErrNo != ErrNoSuccess {
 			err = newRestError(req, resp, response)
 		}
 	default:
