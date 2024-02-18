@@ -7,7 +7,9 @@ type CommonService struct {
 }
 
 func newCommonService(g *Gravity) *CommonService {
-	return &CommonService{g: g}
+	return &CommonService{
+		g: g,
+	}
 }
 
 func (s *CommonService) SaySomething(msg string) {

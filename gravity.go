@@ -15,6 +15,7 @@ type Gravity struct {
 	Client                 *http.Client
 
 	Common *CommonService
+	User   *UserService
 }
 
 func New(identifier string, password string) *Gravity {
@@ -31,6 +32,7 @@ func New(identifier string, password string) *Gravity {
 
 func (g *Gravity) init() {
 	g.Common = newCommonService(g)
+	g.User = newUserService(g)
 }
 
 func (g *Gravity) SetHTTPClient(client *http.Client) {
