@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 )
 
 // All error constants
@@ -105,8 +106,12 @@ func (g *Gravity) RequestWithJSON(method string, url string, data interface{}, o
 }
 
 func (g *Gravity) RequestWithFormURLEncoded(method string, url string, data url.Values, options ...RequestOption) (response []byte, err error) {
-	body := data.Encode()
-	return g.request(method, url, "application/x-www-form-urlencoded; charset=utf-8", []byte(body), options...)
+	bodyReader := strings.NewReader(data.Encode())
+	body, err := io.ReadAll(bodyReader)
+	if err != nil {
+		return
+	}
+	return g.request(method, url, "application/x-www-form-urlencoded; charset=utf-8", body, options...)
 }
 
 func (g *Gravity) request(method string, url string, contentType string, b []byte, options ...RequestOption) (response []byte, err error) {
