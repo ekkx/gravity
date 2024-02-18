@@ -3,10 +3,33 @@ package gravity
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 )
+
+// All error constants
+var (
+	ErrJSONUnmarshal = errors.New("json unmarshal")
+)
+
+var (
+	// Marshal defines function used to encode JSON payloads
+	Marshal func(v interface{}) ([]byte, error) = json.Marshal
+	// Unmarshal defines function used to decode JSON payloads
+	Unmarshal func(src []byte, v interface{}) error = json.Unmarshal
+)
+
+func unmarshal(data []byte, v interface{}) error {
+	err := Unmarshal(data, v)
+	if err != nil {
+		return fmt.Errorf("%w: %s", ErrJSONUnmarshal, err)
+	}
+
+	return nil
+}
 
 type APIErrorMessage struct {
 	Errno  int         `json:"errno"`
@@ -39,7 +62,7 @@ func newRestError(req *http.Request, resp *http.Response, body []byte) *RESTErro
 
 	// Attempt to decode the error and assume no message was provided if it fails
 	var msg *APIErrorMessage
-	err := json.Unmarshal(body, &msg)
+	err := Unmarshal(body, &msg)
 	if err == nil {
 		restErr.Message = msg
 	}
@@ -69,7 +92,7 @@ func newRequestConfig(g *Gravity, req *http.Request) *RequestConfig {
 // It can be supplied as an argument to any REST method.
 type RequestOption func(cfg *RequestConfig)
 
-func (g *Gravity) Request(method string, url string, data interface{}, options ...RequestOption) (response []byte, err error) {
+func (g *Gravity) RequestWithJSON(method string, url string, data interface{}, options ...RequestOption) (response []byte, err error) {
 	var body []byte
 	if data != nil {
 		body, err = json.Marshal(data)
@@ -78,14 +101,21 @@ func (g *Gravity) Request(method string, url string, data interface{}, options .
 		}
 	}
 
-	return g.request(method, url, body, options...)
+	return g.request(method, url, "application/json; charset=utf-8", body, options...)
 }
 
-func (g *Gravity) request(method string, url string, b []byte, options ...RequestOption) (response []byte, err error) {
+func (g *Gravity) RequestWithFormURLEncoded(method string, url string, data url.Values, options ...RequestOption) (response []byte, err error) {
+	body := data.Encode()
+	return g.request(method, url, "application/x-www-form-urlencoded; charset=utf-8", []byte(body), options...)
+}
+
+func (g *Gravity) request(method string, url string, contentType string, b []byte, options ...RequestOption) (response []byte, err error) {
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(b))
 	if err != nil {
 		return
 	}
+
+	req.Header.Set("Content-Type", contentType)
 
 	cfg := newRequestConfig(g, req)
 	for _, opt := range options {
@@ -113,7 +143,7 @@ func (g *Gravity) request(method string, url string, b []byte, options ...Reques
 	case http.StatusOK:
 		// Check response errno and if not 0, make new rest error
 		var msg *APIErrorMessage
-		err = json.Unmarshal(response, &msg)
+		err = Unmarshal(response, &msg)
 		if err != nil {
 			return
 		}

@@ -34,7 +34,3 @@ func (g *Gravity) init() {
 	g.Common = newCommonService(g)
 	g.User = newUserService(g)
 }
-
-func (g *Gravity) SetHTTPClient(client *http.Client) {
-	g.Client = client
-}
