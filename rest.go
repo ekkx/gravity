@@ -9,8 +9,9 @@ import (
 )
 
 type APIErrorMessage struct {
-	No      int    `json:"errno"`
-	Message string `json:"errmsg"`
+	Errno  int         `json:"errno"`
+	Errmsg string      `json:"errmsg"`
+	Data   interface{} `json:"data"`
 }
 
 // RESTError stores error information about a request with a bad response code.
@@ -110,8 +111,15 @@ func (g *Gravity) request(method string, url string, b []byte, options ...Reques
 
 	switch resp.StatusCode {
 	case http.StatusOK:
-		// check response errno
-		// if not 0, make new rest error
+		// Check response errno and if not 0, make new rest error
+		var msg *APIErrorMessage
+		err = json.Unmarshal(response, &msg)
+		if err != nil {
+			return
+		}
+		if msg.Errno != 0 {
+			err = newRestError(req, resp, response)
+		}
 	default:
 		err = newRestError(req, resp, response)
 	}
