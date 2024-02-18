@@ -5,7 +5,7 @@ type Credentials struct {
 	password   string
 }
 
-type DeviceInfo struct {
+type Device struct {
 	simCountry  string
 	device      string
 	sysVer      string
@@ -26,7 +26,7 @@ type DeviceInfo struct {
 
 type State struct {
 	credentials *Credentials
-	deviceInfo  *DeviceInfo
+	device      *Device
 	address     string
 	pnum        string
 	idfa        string
@@ -40,7 +40,7 @@ func NewState(identifier string, password string) *State {
 			identifier: identifier,
 			password:   password,
 		},
-		deviceInfo: &DeviceInfo{
+		device: &Device{
 			simCountry:  "JP",
 			device:      "android",
 			sysVer:      "7.1.2",
