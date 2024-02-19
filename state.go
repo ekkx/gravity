@@ -1,8 +1,11 @@
 package gravity
 
 type Credentials struct {
+	idtype     int
 	identifier string
 	password   string
+	gaid       string
+	uuid       string
 }
 
 type Device struct {
@@ -27,18 +30,17 @@ type Device struct {
 type State struct {
 	credentials *Credentials
 	device      *Device
-	address     string
-	pnum        string
-	idfa        string
-	uwd         string
 	token       string
 }
 
-func NewState(identifier string, password string) *State {
+func NewState(identifier string, password string, idtype int) *State {
 	return &State{
 		credentials: &Credentials{
+			idtype:     idtype,
 			identifier: identifier,
 			password:   password,
+			gaid:       "",
+			uuid:       "",
 		},
 		device: &Device{
 			simCountry:  "JP",
@@ -58,10 +60,6 @@ func NewState(identifier string, password string) *State {
 			product:     "gravity",
 			model:       "SM-G965N",
 		},
-		address: "",
-		pnum:    "",
-		idfa:    "",
-		uwd:     "",
-		token:   "",
+		token: "",
 	}
 }
