@@ -3,6 +3,7 @@ package gravity
 import (
 	"encoding/gob"
 	"os"
+	"strings"
 )
 
 const filename = "gravity.gob"
@@ -79,8 +80,11 @@ func (s *StorageService) save() error {
 }
 
 func (s *StorageService) createOneAndSave() error {
-	s.g.State.credentials.gaid, _ = generateUUID()
-	s.g.State.credentials.uuid, _ = generateUUID()
+	gaid, _ := generateUUID()
+	uuid, _ := generateUUID()
+
+	s.g.State.credentials.gaid = gaid
+	s.g.State.credentials.uuid = strings.ToUpper(uuid)
 
 	return s.save()
 }
