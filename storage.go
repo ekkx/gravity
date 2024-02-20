@@ -43,7 +43,7 @@ func (s *StorageService) writeStorage(fname string) (err error) {
 	defer file.Close()
 
 	encoder := gob.NewEncoder(file)
-	err = encoder.Encode(s.g.State.credentials)
+	err = encoder.Encode(s.g.State.cred)
 	if err != nil {
 		return
 	}
@@ -59,11 +59,11 @@ func (s *StorageService) load() (err error) {
 		return
 	}
 
-	if !(c.identifier == s.g.State.credentials.identifier && c.password == s.g.State.credentials.password) {
+	if !(c.identifier == s.g.State.cred.identifier && c.pwd == s.g.State.cred.pwd) {
 		return ErrStorageDoesNotMatch
 	}
 
-	s.g.State.credentials = c
+	s.g.State.cred = c
 
 	return
 }
@@ -71,7 +71,7 @@ func (s *StorageService) load() (err error) {
 // save() exports current Gravity.State as local storage data
 func (s *StorageService) save() error {
 	// Check idtype just in case.
-	idtype := getIDType(s.g.State.credentials.identifier)
+	idtype := getIDType(s.g.State.cred.identifier)
 	if idtype == -1 {
 		return ErrInvalidIdentifier
 	}
@@ -83,8 +83,8 @@ func (s *StorageService) createOneAndSave() error {
 	gaid, _ := generateUUID()
 	uuid, _ := generateUUID()
 
-	s.g.State.credentials.gaid = gaid
-	s.g.State.credentials.uuid = strings.ToUpper(uuid)
+	s.g.State.cred.gaid = gaid
+	s.g.State.cred.uuid = strings.ToUpper(uuid)
 
 	return s.save()
 }

@@ -3,7 +3,7 @@ package gravity
 type Credentials struct {
 	idtype     int
 	identifier string
-	password   string
+	pwd        string
 	gaid       string
 	uuid       string
 }
@@ -28,17 +28,17 @@ type Device struct {
 }
 
 type State struct {
-	credentials *Credentials
-	device      *Device
-	token       string
+	cred   *Credentials
+	device *Device
+	token  string
 }
 
 func NewState(identifier string, password string, idtype int) *State {
 	return &State{
-		credentials: &Credentials{
+		cred: &Credentials{
 			idtype:     idtype,
 			identifier: identifier,
-			password:   password,
+			pwd:        password,
 			gaid:       "",
 			uuid:       "",
 		},
