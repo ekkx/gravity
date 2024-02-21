@@ -3,29 +3,57 @@ package gravity
 import (
 	"net/http"
 	"time"
+
+	"github.com/dghubble/sling"
 )
 
 // VERSION of Go Gravity
 const VERSION = "0.0.0"
 
 type Gravity struct {
+	sling *sling.Sling
+
 	State                  *State
 	ShouldRetryOnRateLimit bool
 	MaxRestRetries         int
-	Client                 *http.Client
 
+	Common  *CommonService
 	Storage *StorageService
-
-	Common *CommonService
-	User   *UserService
+	User    *UserService
 }
 
-func New(identifier string, password string) (g *Gravity, err error) {
+type GravityConfig struct {
+	Client *http.Client
+}
+
+func newGravityConfig() *GravityConfig {
+	return &GravityConfig{
+		Client: &http.Client{Timeout: 20 * time.Second},
+	}
+}
+
+type GravityOption func(cfg *GravityConfig)
+
+// WithClient changes the HTTP client used for the request.
+func WithClient(client *http.Client) GravityOption {
+	return func(cfg *GravityConfig) {
+		if client != nil {
+			cfg.Client = client
+		}
+	}
+}
+
+func New(identifier string, password string, options ...GravityOption) (g *Gravity, err error) {
+	cfg := newGravityConfig()
+	for _, opt := range options {
+		opt(cfg)
+	}
+
 	g = &Gravity{
+		sling:                  sling.New().Client(cfg.Client).Base(EndpointRoot),
 		State:                  NewState(identifier, password, getIDType(identifier)),
 		ShouldRetryOnRateLimit: true,
 		MaxRestRetries:         3,
-		Client:                 &http.Client{Timeout: 20 * time.Second},
 	}
 
 	err = g.init()
@@ -33,7 +61,7 @@ func New(identifier string, password string) (g *Gravity, err error) {
 		return nil, err
 	}
 
-	return g, nil
+	return
 }
 
 func (g *Gravity) init() (err error) {
@@ -64,7 +92,6 @@ func (g *Gravity) init() (err error) {
 func (g *Gravity) authenticate() (token string, err error) {
 	switch g.State.cred.idtype {
 	case 0:
-		// Login with email address
 		if !(g.User.isEmailRegistered(g.State.cred.identifier)) {
 			return "", ErrAuthenticationFailed
 		}
