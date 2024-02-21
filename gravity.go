@@ -3,15 +3,13 @@ package gravity
 import (
 	"net/http"
 	"time"
-
-	"github.com/dghubble/sling"
 )
 
 // VERSION of Go Gravity
 const VERSION = "0.0.0"
 
 type Gravity struct {
-	sling *sling.Sling
+	client *http.Client
 
 	State                  *State
 	ShouldRetryOnRateLimit bool
@@ -23,12 +21,12 @@ type Gravity struct {
 }
 
 type GravityConfig struct {
-	Client *http.Client
+	client *http.Client
 }
 
 func newGravityConfig() *GravityConfig {
 	return &GravityConfig{
-		Client: &http.Client{Timeout: 20 * time.Second},
+		client: &http.Client{Timeout: 20 * time.Second},
 	}
 }
 
@@ -38,7 +36,7 @@ type GravityOption func(cfg *GravityConfig)
 func WithClient(client *http.Client) GravityOption {
 	return func(cfg *GravityConfig) {
 		if client != nil {
-			cfg.Client = client
+			cfg.client = client
 		}
 	}
 }
@@ -50,7 +48,7 @@ func New(identifier string, password string, options ...GravityOption) (g *Gravi
 	}
 
 	g = &Gravity{
-		sling:                  sling.New().Client(cfg.Client).Base(EndpointRoot),
+		client:                 cfg.client,
 		State:                  NewState(identifier, password, getIDType(identifier)),
 		ShouldRetryOnRateLimit: true,
 		MaxRestRetries:         3,
