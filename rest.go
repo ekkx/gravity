@@ -71,82 +71,58 @@ func newRestError(req *http.Request, resp *http.Response, body []byte) *RESTErro
 	return restErr
 }
 
-// RequestConfig is an HTTP request configuration.
-type RequestConfig struct {
-	Request                *http.Request
-	ShouldRetryOnRateLimit bool
-	MaxRestRetries         int
-	Client                 *http.Client
+func (g *Gravity) requestWithQuery(method, path string, queryParams, st interface{}) (response interface{}, err error) {
+	return g.request(method, path, "", queryParams, st)
 }
 
-// newRequestConfig returns a new HTTP request configuration based on parameters in Gravity.
-func newRequestConfig(g *Gravity, req *http.Request) *RequestConfig {
-	return &RequestConfig{
-		ShouldRetryOnRateLimit: g.ShouldRetryOnRateLimit,
-		MaxRestRetries:         g.MaxRestRetries,
-		Client:                 g.Client,
-		Request:                req,
-	}
+func (g *Gravity) requestWithJSON(method, path string, body, st interface{}) (response interface{}, err error) {
+	return g.request(method, path, "application/json", body, st)
 }
 
-// RequestOption is a function which mutates request configuration.
-// It can be supplied as an argument to any REST method.
-type RequestOption func(cfg *RequestConfig)
-
-func (g *Gravity) RequestWithQueryParam(method string, endpoint string, params map[string]string, options ...RequestOption) (response []byte, err error) {
-	u, err := url.Parse(endpoint)
-	if err != nil {
-		return
-	}
-
-	q := u.Query()
-	for k, v := range params {
-		q.Add(k, v)
-	}
-	u.RawQuery = q.Encode()
-
-	return g.request(method, u.String(), "", nil, options...)
+func (g *Gravity) requestWithForm(method, path string, body, st interface{}) (response interface{}, err error) {
+	return g.request(method, path, "application/x-www-form-urlencoded", body, st)
 }
 
-func (g *Gravity) RequestWithJSON(method string, endpoint string, data interface{}, options ...RequestOption) (response []byte, err error) {
-	var body []byte
-	if data != nil {
-		body, err = json.Marshal(data)
-		if err != nil {
-			return
+func (g *Gravity) request(method, endpoint, contentType string, requestData, st interface{}) (r interface{}, err error) {
+	di := structToMapWithJSON(g.State.device)
+	rd := structToMapWithJSON(requestData)
+
+	// Merge di and rd
+	for k, v := range di {
+		rd[k] = v
+	}
+
+	var req *http.Request
+
+	switch contentType {
+	case "":
+		params := url.Values{}
+		for k, v := range rd {
+			params.Add(k, v)
 		}
+		req, err = http.NewRequest(method, (endpoint + "?" + params.Encode()), nil)
+	case "application/json":
+		jsonData, err := json.Marshal(rd)
+		if err != nil {
+			return nil, err
+		}
+		req, err = http.NewRequest(method, endpoint, bytes.NewBuffer(jsonData))
+	case "application/x-www-form-urlencoded":
+		formData := url.Values{}
+		for k, v := range rd {
+			formData.Add(k, v)
+		}
+		req, err = http.NewRequest(method, endpoint, strings.NewReader(formData.Encode()))
+	default:
+		return nil, fmt.Errorf("invalid content type %s", contentType)
 	}
 
-	return g.request(method, endpoint, "application/json; charset=utf-8", body, options...)
-}
-
-func (g *Gravity) RequestWithFormURLEncoded(method string, endpoint string, data url.Values, options ...RequestOption) (response []byte, err error) {
-	bodyReader := strings.NewReader(data.Encode())
-	body, err := io.ReadAll(bodyReader)
 	if err != nil {
 		return
 	}
 
-	return g.request(method, endpoint, "application/x-www-form-urlencoded; charset=utf-8", body, options...)
-}
-
-func (g *Gravity) request(method string, endpoint string, contentType string, b []byte, options ...RequestOption) (response []byte, err error) {
-	req, err := http.NewRequest(method, endpoint, bytes.NewBuffer(b))
-	if err != nil {
-		return
-	}
-
-	if contentType != "" {
-		req.Header.Set("Content-Type", contentType)
-	}
-
-	cfg := newRequestConfig(g, req)
-	for _, opt := range options {
-		opt(cfg)
-	}
-	req = cfg.Request
-
-	resp, err := g.Client.Do(req)
+	client := &http.Client{}
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -157,25 +133,21 @@ func (g *Gravity) request(method string, endpoint string, contentType string, b 
 		}
 	}()
 
-	response, err = io.ReadAll(resp.Body)
+	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return
 	}
 
-	switch resp.StatusCode {
-	case http.StatusOK:
-		// Check response errno and if not 0, make new rest error
-		var msg *APIErrorMessage
-		err = Unmarshal(response, &msg)
-		if err != nil {
-			return
-		}
-		if msg.ErrNo != ErrNoSuccess {
-			err = newRestError(req, resp, response)
-		}
-	default:
-		err = newRestError(req, resp, response)
+	var response *APIErrorMessage
+	err = Unmarshal(respBody, &response)
+	if err != nil {
+		return
 	}
 
-	return
+	if response.ErrNo != ErrNoSuccess {
+		err = newRestError(req, resp, respBody)
+		return nil, err
+	}
+
+	return response.Data, nil
 }
