@@ -10,6 +10,7 @@ var (
 
 var (
 	ErrNoInvalidParams             = -3
+	ErrNoSignCheckFailed           = -4
 	ErrNoSuccess                   = 0
 	ErrNoEmailAddressOrPassword    = 50012
 	ErrNoEmailAddressNotRegistered = 50014

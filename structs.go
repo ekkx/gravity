@@ -31,7 +31,7 @@ type UserInfo struct {
 	RegisterVersion     string    `json:"app_version"`
 	ShouldHidden        int       `json:"should_hidden"`
 	UserCountry         string    `json:"user_country"`
-	UserID              string    `json:"user_id"`
+	UserID              float64   `json:"user_id"`
 	VirtualTypeV2       int       `json:"virtual_type_v2"`
 	VoiceCreatorStatus  int       `json:"voice_creator_status"`
 
