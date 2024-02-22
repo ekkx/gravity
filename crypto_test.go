@@ -7,7 +7,7 @@ import (
 func TestEncrypt(t *testing.T) {
 	text := "hello world"
 
-	encrypted, _ := encrypt(text)
+	encrypted := encrypt(text)
 	decrypted, _ := decrypt(encrypted)
 
 	if text != decrypted {
@@ -17,16 +17,16 @@ func TestEncrypt(t *testing.T) {
 
 func TestGenerateSignature(t *testing.T) {
 	data := map[string]string{
-		"address":          "8q/ux729nh0NyK+8o+wSp4YcUzqFdPvTMIWuQYmdmG0=",
+		"address":          "ux8S1csO8VY/H44REw/LuA==",
 		"sim_country":      "JP",
 		"device":           "android",
 		"system_version":   "7.1.2",
-		"sign":             "df8dddc15430b83284314fc36528648d",
+		"sign":             "",
 		"referrer":         "Organic",
 		"zone":             "9",
-		"idfa":             "oP6bmU4SPL/o+93TSNKGJYa+SVqsNnHgif8N7MzDbwQ9iIOD0089hb74OnFigAch",
+		"idfa":             "eOl0xGlfS0H4qZ7ajwg7WlXMb2xJ7ec6u4C0D1QbtmhSFB58J4FMzKOgyqRTpdzP",
 		"app_version_code": "375",
-		"ts":               "1708260764",
+		"ts":               "1708600965",
 		"sys_lang":         "ja",
 		"app_version":      "9.2.0",
 		"languageV2":       "ja",
@@ -45,7 +45,7 @@ func TestGenerateSignature(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if sign != "d01bc8090834ef38d5e4888a97c91f0c" {
+	if sign != "5b2babe96ec1933c6aed9f1025670512" {
 		t.Fatal("generateSignature(), sign check failed.")
 	}
 }

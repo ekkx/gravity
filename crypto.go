@@ -35,11 +35,8 @@ func unpad(src []byte) ([]byte, error) {
 	return src[:(length - unpadding)], nil
 }
 
-func encrypt(text string) (string, error) {
-	block, err := aes.NewCipher([]byte(KEY))
-	if err != nil {
-		return "", err
-	}
+func encrypt(text string) string {
+	block, _ := aes.NewCipher([]byte(KEY))
 
 	ecb := cipher.NewCBCEncrypter(block, []byte(IV))
 	content := []byte(text)
@@ -48,7 +45,7 @@ func encrypt(text string) (string, error) {
 	ciphertext := make([]byte, len(content))
 	ecb.CryptBlocks(ciphertext, content)
 
-	return base64.StdEncoding.EncodeToString(ciphertext), nil
+	return base64.StdEncoding.EncodeToString(ciphertext)
 }
 
 func decrypt(text string) (string, error) {
