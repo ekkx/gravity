@@ -22,3 +22,6 @@ go.work
 
 # Go temp file
 *.gob
+
+# Environment variables
+*.env
