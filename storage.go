@@ -56,7 +56,7 @@ func deleteStorage(filename string) (err error) {
 
 // load() transports local storage data into Gravity.State.
 // If Gravity.State doesn't match the local straage, returns an error.
-func (s *StorageService) load(filename string) (err error) {
+func (s *StorageService) Load(filename string) (err error) {
 	c, err := readStorage(filename)
 	if err != nil {
 		return
@@ -72,7 +72,7 @@ func (s *StorageService) load(filename string) (err error) {
 }
 
 // save() exports current Gravity.State as local storage data
-func (s *StorageService) save(filename string) error {
+func (s *StorageService) Save(filename string) error {
 	// Check idtype just in case.
 	idtype := getIDType(s.g.State.cred.Identifier)
 	if idtype == -1 {
@@ -82,12 +82,16 @@ func (s *StorageService) save(filename string) error {
 	return writeStorage(filename, s.g.State.cred)
 }
 
-func (s *StorageService) createOneAndSave(filename string) error {
+func (s *StorageService) CreateOneAndSave(filename string) error {
 	gaid, _ := generateUUID()
 	uuid, _ := generateUUID()
 
 	s.g.State.cred.GAID = gaid
-	s.g.State.cred.GAID = strings.ToUpper(uuid)
+	s.g.State.cred.UUID = strings.ToUpper(uuid)
 
-	return s.save(filename)
+	return s.Save(filename)
+}
+
+func (s *StorageService) Remove(filename string) error {
+	return deleteStorage(filename)
 }
