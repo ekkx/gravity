@@ -23,7 +23,7 @@ import "github.com/ekkx/gravity"
 Construct a new Gravity client.
 
 ```go
-g := gravity.New("your_number_or_email", "your_password")
+g, err := gravity.New("your_email", "your_password")
 ```
 
 See Documentation and Examples below for more detailed information.
