@@ -1,3 +1,3 @@
-module github.com/4kkx/gravity
+module github.com/ekkx/gravity
 
-go 1.21.5
+go 1.21

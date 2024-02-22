@@ -1,0 +1,12 @@
+{
+  "editor.formatOnSave": true,
+  "[go]": {
+    "editor.insertSpaces": true,
+    "editor.tabSize": 4,
+    "editor.defaultFormatter": "golang.go"
+  },
+  "[json]": {
+    "editor.tabSize": 2,
+    "editor.indentSize": 2
+  }
+}
