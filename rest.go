@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 )
 
 // All error constants
@@ -84,7 +85,13 @@ func (g *Gravity) requestWithForm(method, path string, body, st interface{}) (re
 }
 
 func (g *Gravity) request(method, endpoint, contentType string, requestData, st interface{}) (r interface{}, err error) {
-	di := structToMapWithJSON(g.State.device)
+	g.state.device.IDFA = encrypt(g.state.cred.GAID)
+	g.state.device.UWD = encrypt(g.state.cred.UUID)
+	g.state.device.Timestamp = getstrts(time.Now().Unix())
+
+	g.state.device.Sign, _ = generateSignature(structToMapWithJSON(g.state.device))
+
+	di := structToMapWithJSON(g.state.device)
 	rd := structToMapWithJSON(requestData)
 
 	// Merge di and rd
@@ -100,19 +107,27 @@ func (g *Gravity) request(method, endpoint, contentType string, requestData, st 
 		for k, v := range rd {
 			params.Add(k, v)
 		}
+
 		req, err = http.NewRequest(method, (endpoint + "?" + params.Encode()), nil)
+
 	case "application/json":
 		jsonData, err := json.Marshal(rd)
 		if err != nil {
 			return nil, err
 		}
+
 		req, err = http.NewRequest(method, endpoint, bytes.NewBuffer(jsonData))
+		req.Header.Set("Content-Type", "application/json; charset=utf-8")
+
 	case "application/x-www-form-urlencoded":
 		formData := url.Values{}
 		for k, v := range rd {
 			formData.Add(k, v)
 		}
+
 		req, err = http.NewRequest(method, endpoint, strings.NewReader(formData.Encode()))
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+
 	default:
 		return nil, fmt.Errorf("invalid content type %s", contentType)
 	}
