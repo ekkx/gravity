@@ -11,9 +11,10 @@ const VERSION = "0.0.0"
 type Gravity struct {
 	client *http.Client
 
-	State                  *State
-	ShouldRetryOnRateLimit bool
-	MaxRestRetries         int
+	state            *State
+	storageFilename  string
+	retryOnRateLimit bool
+	maxRestRetries   int
 
 	Common  *CommonService
 	Storage *StorageService
@@ -48,10 +49,11 @@ func New(identifier string, password string, options ...GravityOption) (g *Gravi
 	}
 
 	g = &Gravity{
-		client:                 cfg.client,
-		State:                  NewState(identifier, password, getIDType(identifier)),
-		ShouldRetryOnRateLimit: true,
-		MaxRestRetries:         3,
+		client:           cfg.client,
+		state:            NewState(identifier, password, getLoginType(identifier)),
+		storageFilename:  "gravity.gob",
+		retryOnRateLimit: true,
+		maxRestRetries:   3,
 	}
 
 	err = g.init()
@@ -69,47 +71,38 @@ func (g *Gravity) init() (err error) {
 	g.Storage = newStorageService(g)
 
 	// Initialize the storage
-	err = g.Storage.load()
+	err = g.Storage.Load()
 	if err != nil {
-		err2 := g.Storage.createOneAndSave()
+		err2 := g.Storage.CreateOneAndSave()
 		if err2 != nil {
 			return err2
 		}
 	}
 
-	token, err := g.authenticate()
-	if err != nil {
-		return
+	if g.state.cred.Token == "" {
+		token, err := g.authenticate()
+		if err != nil {
+			return err
+		}
+		g.state.cred.Token = token
 	}
-	g.State.token = token
 
-	return
+	return nil
 }
 
 // authenticate() authenticates the user with Gravity.State.credentials.
 func (g *Gravity) authenticate() (token string, err error) {
-	switch g.State.cred.idtype {
-	case 0:
-		if !(g.User.isEmailRegistered(g.State.cred.identifier)) {
+	switch g.state.cred.LoginType {
+	case LoginTypeEmail:
+		if !(g.User.isEmailRegistered(g.state.cred.Identifier)) {
 			return "", ErrAuthenticationFailed
 		}
-		resp, err := g.User.loginWithEmail(g.State.cred.identifier, g.State.cred.pwd)
+		resp, err := g.User.loginWithEmail(g.state.cred.Identifier, g.state.cred.Password)
 		if err != nil {
 			return "", err
 		}
 
-		return resp.token, nil
-	// case 1:
-	// 	// Login with phone number
-	// 	if !(g.User.isPhoneNumberRegistered(g.State.cred.identifier)) {
-	// 		return "", ErrAuthenticationFailed
-	// 	}
-	// 	resp, err := g.User.loginWithPhoneNumber(g.State.cred.identifier, g.State.cred.pwd)
-	// 	if err != nil {
-	// 		return "", err
-	// 	}
-
-	// 	return resp.token, nil
+		return resp.Token, nil
 	default:
 		return "", ErrInvalidIdentifier
 	}

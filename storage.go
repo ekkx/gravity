@@ -56,42 +56,42 @@ func deleteStorage(filename string) (err error) {
 
 // load() transports local storage data into Gravity.State.
 // If Gravity.State doesn't match the local straage, returns an error.
-func (s *StorageService) Load(filename string) (err error) {
-	c, err := readStorage(filename)
+func (s *StorageService) Load() (err error) {
+	c, err := readStorage(s.g.storageFilename)
 	if err != nil {
 		return
 	}
 
-	if !(c.Identifier == s.g.State.cred.Identifier && c.Password == s.g.State.cred.Password) {
+	if !(c.Identifier == s.g.state.cred.Identifier && c.Password == s.g.state.cred.Password) {
 		return ErrStorageDoesNotMatch
 	}
 
-	s.g.State.cred = c
+	s.g.state.cred = c
 
 	return
 }
 
 // save() exports current Gravity.State as local storage data
-func (s *StorageService) Save(filename string) error {
-	// Check idtype just in case.
-	idtype := getIDType(s.g.State.cred.Identifier)
-	if idtype == -1 {
+func (s *StorageService) Save() error {
+	// Check login type just in case.
+	ltype := getLoginType(s.g.state.cred.Identifier)
+	if ltype == -1 {
 		return ErrInvalidIdentifier
 	}
 
-	return writeStorage(filename, s.g.State.cred)
+	return writeStorage(s.g.storageFilename, s.g.state.cred)
 }
 
-func (s *StorageService) CreateOneAndSave(filename string) error {
+func (s *StorageService) CreateOneAndSave() error {
 	gaid, _ := generateUUID()
 	uuid, _ := generateUUID()
 
-	s.g.State.cred.GAID = gaid
-	s.g.State.cred.UUID = strings.ToUpper(uuid)
+	s.g.state.cred.GAID = gaid
+	s.g.state.cred.UUID = strings.ToUpper(uuid)
 
-	return s.Save(filename)
+	return s.Save()
 }
 
-func (s *StorageService) Remove(filename string) error {
-	return deleteStorage(filename)
+func (s *StorageService) Remove() error {
+	return deleteStorage(s.g.storageFilename)
 }

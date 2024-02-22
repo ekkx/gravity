@@ -2,7 +2,6 @@ package gravity
 
 import (
 	"errors"
-	"log"
 	"net/http"
 	"os"
 	"reflect"
@@ -13,11 +12,11 @@ func TestWriteReadAndDeleteStorage(t *testing.T) {
 	filename := "test.gob"
 
 	cred := &Credentials{
-		IdentifierType: 0,
-		Identifier:     "hello@example.com",
-		Password:       "notpwd",
-		GAID:           "",
-		UUID:           "",
+		LoginType:  2,
+		Identifier: "hello@example.com",
+		Password:   "notpwd",
+		GAID:       "",
+		UUID:       "",
 	}
 
 	err := writeStorage(filename, cred)
@@ -52,33 +51,34 @@ func TestStorageService(t *testing.T) {
 	filename := "test.gob"
 
 	g := &Gravity{
-		client:                 &http.Client{},
-		State:                  NewState("hello@example.com", "notpwd", 0),
-		ShouldRetryOnRateLimit: true,
-		MaxRestRetries:         3,
+		client:           &http.Client{},
+		state:            NewState("hello@example.com", "notpwd", 0),
+		storageFilename:  filename,
+		retryOnRateLimit: true,
+		maxRestRetries:   3,
 	}
 
 	s := newStorageService(g)
 
-	err := s.CreateOneAndSave(filename)
+	err := s.CreateOneAndSave()
 	if err != nil {
-		log.Fatal(err)
+		t.Fatal(err)
 	}
 
-	credBefore := g.State.cred
+	credBefore := g.state.cred
 
 	t.Log(credBefore)
 
-	err = s.Load(filename)
+	err = s.Load()
 	if err != nil {
 		t.Fatalf("failed to load: %v", err)
 	}
 
-	if !reflect.DeepEqual(credBefore, g.State.cred) {
+	if !reflect.DeepEqual(credBefore, g.state.cred) {
 		t.Fatal("failed to load storage")
 	}
 
-	err = s.Remove(filename)
+	err = s.Remove()
 	if err != nil {
 		t.Fatalf("failed to remove: %v", err)
 	}
