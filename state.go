@@ -9,26 +9,26 @@ type Credentials struct {
 }
 
 type Device struct {
-	simCountry  string `json:"sim_country"`
-	device      string `json:"device"`
-	sysVer      string `json:"system_version"`
-	sign        string `json:"sign"`
-	referrer    string `json:"referrer"`
-	zone        string `json:"zone"`
-	idfa        string `json:"idfa"`
-	appVerCode  string `json:"app_version_code"`
-	timestamp   string `json:"ts"`
-	sysLang     string `json:"sys_lang"`
-	appVer      string `json:"app_version"`
-	langV2      string `json:"languageV2"`
-	uwd         string `json:"uwd"`
-	country     string `json:"country"`
-	brand       string `json:"brand"`
-	sdkVer      string `json:"sdk_version"`
-	userCountry string `json:"user_country"`
-	pkg         string `json:"pkg"`
-	product     string `json:"product"`
-	model       string `json:"model"`
+	SimCountry     string `json:"sim_country"`
+	Device         string `json:"device"`
+	SystemVersion  string `json:"system_version"`
+	Sign           string `json:"sign"`
+	Referrer       string `json:"referrer"`
+	Zone           string `json:"zone"`
+	IDFA           string `json:"idfa"`
+	AppVersionCode string `json:"app_version_code"`
+	Timestamp      string `json:"ts"`
+	SystemLanguage string `json:"sys_lang"`
+	AppVersion     string `json:"app_version"`
+	LanguageV2     string `json:"languageV2"`
+	UWD            string `json:"uwd"`
+	Country        string `json:"country"`
+	Brand          string `json:"brand"`
+	SDKVersion     string `json:"sdk_version"`
+	UserCountry    string `json:"user_country"`
+	Package        string `json:"pkg"`
+	Product        string `json:"product"`
+	Model          string `json:"model"`
 }
 
 type State struct {
@@ -40,33 +40,33 @@ type State struct {
 func NewState(identifier string, password string, idtype int) *State {
 	return &State{
 		cred: &Credentials{
-			IdentifierType:     idtype,
-			Identifier: identifier,
-			Password:        password,
-			GAID:       "",
-			UUID:       "",
+			IdentifierType: idtype,
+			Identifier:     identifier,
+			Password:       password,
+			GAID:           "",
+			UUID:           "",
 		},
 		device: &Device{
-			simCountry:  "JP",
-			device:      "android",
-			sysVer:      "7.1.2",
-			sign:        "",
-			referrer:    "Organic",
-			zone:        "9",
-			idfa:        "",
-			appVerCode:  "375",
-			timestamp:   "",
-			sysLang:     "ja",
-			appVer:      "9.2.0",
-			langV2:      "ja",
-			uwd:         "",
-			country:     "JP",
-			brand:       "samsung",
-			sdkVer:      "25",
-			userCountry: "JP",
-			pkg:         "anonymous.sns.community.gravity",
-			product:     "gravity",
-			model:       "SM-G965N",
+			SimCountry:     "JP",
+			Device:         "android",
+			SystemVersion:  "7.1.2",
+			Sign:           "",
+			Referrer:       "Organic",
+			Zone:           "9",
+			IDFA:           "",
+			AppVersionCode: "375",
+			Timestamp:      "",
+			SystemLanguage: "ja",
+			AppVersion:     "9.2.0",
+			LanguageV2:     "ja",
+			UWD:            "",
+			Country:        "JP",
+			Brand:          "samsung",
+			SDKVersion:     "25",
+			UserCountry:    "JP",
+			Package:        "anonymous.sns.community.gravity",
+			Product:        "gravity",
+			Model:          "SM-G965N",
 		},
 		token: "",
 	}
