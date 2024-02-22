@@ -12,10 +12,16 @@ func getstrts(ts int64) string {
 	return strconv.FormatUint(uint64(ts), 10)
 }
 
-// getIDType() returns the type of identifier.
-// 0: email, 1: phone number, -1: neither of these
-func getIDType(identifier string) int {
-	return 0
+var (
+	LoginTypeInvalid = -1
+	LoginTypeOther   = 0
+	LoginTypePnum    = 1
+	LoginTypeEmail   = 2
+)
+
+// getLoginType() returns the type of identifier.
+func getLoginType(identifier string) int {
+	return LoginTypeEmail
 }
 
 func generateUUID() (string, error) {
@@ -40,7 +46,9 @@ func structToMapWithJSON(data interface{}) map[string]string {
 	Unmarshal(b, &result)
 
 	for key, value := range result {
-		strResult[key] = fmt.Sprintf("%v", value)
+		if value != nil && value != "" {
+			strResult[key] = fmt.Sprintf("%v", value)
+		}
 	}
 
 	return strResult
