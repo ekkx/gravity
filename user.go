@@ -15,9 +15,9 @@ type IsEmailRegisteredParams struct {
 }
 
 func (s *UserService) isEmailRegistered(email string) bool {
-	address, _ := encrypt(email)
+	address := encrypt(email)
 
-	_, err := s.g.requestWithForm("POST", EndpointEmailIsRegistered, &IsEmailRegisteredParams{Address: address}, nil)
+	_, err := s.g.requestWithForm("POST", EndpointEmailIsRegistered, &IsEmailRegisteredParams{Address: address})
 
 	return err == nil
 }
@@ -27,9 +27,9 @@ type IsPhoneNumberRegisteredParams struct {
 }
 
 func (s *UserService) isPhoneNumberRegistered(number string) bool {
-	pnum, _ := encrypt(number)
+	pnum := encrypt(number)
 
-	_, err := s.g.requestWithForm("POST", EndpointMobileIsRegistered, &IsPhoneNumberRegisteredParams{Number: pnum}, nil)
+	_, err := s.g.requestWithForm("POST", EndpointMobileIsRegistered, &IsPhoneNumberRegisteredParams{Number: pnum})
 
 	return err == nil
 }
@@ -39,14 +39,16 @@ type LoginWithEmailParams struct {
 	Password string `json:"pwd"`
 }
 
-func (s *UserService) loginWithEmail(email, password string) (response interface{}, err error) {
-	address, _ := encrypt(email)
-	pwd, _ := encrypt(password)
+func (s *UserService) loginWithEmail(email, password string) (st LoginData, err error) {
+	address := encrypt(email)
+	pwd := encrypt(password)
 
-	resp, err := s.g.requestWithForm("POST", EndpointEmailLogin, &LoginWithEmailParams{Address: address, Password: pwd}, nil)
+	response, err := s.g.requestWithForm("POST", EndpointEmailLogin, &LoginWithEmailParams{Address: address, Password: pwd})
 	if err != nil {
 		return
 	}
 
-	return resp, nil
+	err = unmarshal(response, &st)
+
+	return
 }

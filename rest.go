@@ -24,8 +24,13 @@ var (
 	Unmarshal func(src []byte, v interface{}) error = json.Unmarshal
 )
 
-func unmarshal(data []byte, v interface{}) error {
-	err := Unmarshal(data, v)
+func unmarshal(data interface{}, v interface{}) error {
+	byteArr, err := json.Marshal(data)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	err = Unmarshal(byteArr, v)
 	if err != nil {
 		return fmt.Errorf("%w: %s", ErrJSONUnmarshal, err)
 	}
@@ -72,24 +77,22 @@ func newRestError(req *http.Request, resp *http.Response, body []byte) *RESTErro
 	return restErr
 }
 
-func (g *Gravity) requestWithQuery(method, path string, queryParams, st interface{}) (response interface{}, err error) {
-	return g.request(method, path, "", queryParams, st)
+func (g *Gravity) requestWithQuery(method, path string, queryParams interface{}) (response interface{}, err error) {
+	return g.request(method, path, "", queryParams)
 }
 
-func (g *Gravity) requestWithJSON(method, path string, body, st interface{}) (response interface{}, err error) {
-	return g.request(method, path, "application/json", body, st)
+func (g *Gravity) requestWithJSON(method, path string, body interface{}) (response interface{}, err error) {
+	return g.request(method, path, "application/json; charset=utf-8", body)
 }
 
-func (g *Gravity) requestWithForm(method, path string, body, st interface{}) (response interface{}, err error) {
-	return g.request(method, path, "application/x-www-form-urlencoded", body, st)
+func (g *Gravity) requestWithForm(method, path string, body interface{}) (response interface{}, err error) {
+	return g.request(method, path, "application/x-www-form-urlencoded; charset=utf-8", body)
 }
 
-func (g *Gravity) request(method, endpoint, contentType string, requestData, st interface{}) (r interface{}, err error) {
+func (g *Gravity) request(method, endpoint, contentType string, requestData interface{}) (r interface{}, err error) {
 	g.state.device.IDFA = encrypt(g.state.cred.GAID)
 	g.state.device.UWD = encrypt(g.state.cred.UUID)
 	g.state.device.Timestamp = getstrts(time.Now().Unix())
-
-	g.state.device.Sign, _ = generateSignature(structToMapWithJSON(g.state.device))
 
 	di := structToMapWithJSON(g.state.device)
 	rd := structToMapWithJSON(requestData)
@@ -99,6 +102,12 @@ func (g *Gravity) request(method, endpoint, contentType string, requestData, st 
 		rd[k] = v
 	}
 
+	if g.state.cred.Token != "" {
+		rd["token"] = g.state.cred.Token
+	}
+
+	rd["sign"], _ = generateSignature(rd)
+
 	var req *http.Request
 
 	switch contentType {
@@ -107,27 +116,19 @@ func (g *Gravity) request(method, endpoint, contentType string, requestData, st 
 		for k, v := range rd {
 			params.Add(k, v)
 		}
-
 		req, err = http.NewRequest(method, (endpoint + "?" + params.Encode()), nil)
-
-	case "application/json":
-		jsonData, err := json.Marshal(rd)
-		if err != nil {
-			return nil, err
-		}
-
-		req, err = http.NewRequest(method, endpoint, bytes.NewBuffer(jsonData))
-		req.Header.Set("Content-Type", "application/json; charset=utf-8")
-
-	case "application/x-www-form-urlencoded":
+	case "application/x-www-form-urlencoded; charset=utf-8":
 		formData := url.Values{}
 		for k, v := range rd {
 			formData.Add(k, v)
 		}
-
 		req, err = http.NewRequest(method, endpoint, strings.NewReader(formData.Encode()))
-		req.Header.Set("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
-
+	case "application/json; charset=utf-8":
+		jsonData, err := json.Marshal(rd)
+		if err != nil {
+			return nil, err
+		}
+		req, err = http.NewRequest(method, endpoint, bytes.NewBuffer(jsonData))
 	default:
 		return nil, fmt.Errorf("invalid content type %s", contentType)
 	}
@@ -135,6 +136,10 @@ func (g *Gravity) request(method, endpoint, contentType string, requestData, st 
 	if err != nil {
 		return
 	}
+
+	req.Header.Set("Host", "api.gravity.place")
+	req.Header.Set("Content-Type", contentType)
+	req.Header.Set("User-Agent", "okhttp/3.12.13")
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
@@ -161,7 +166,7 @@ func (g *Gravity) request(method, endpoint, contentType string, requestData, st 
 
 	if response.ErrNo != ErrNoSuccess {
 		err = newRestError(req, resp, respBody)
-		return nil, err
+		return response, err
 	}
 
 	return response.Data, nil
