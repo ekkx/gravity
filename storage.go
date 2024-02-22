@@ -6,8 +6,6 @@ import (
 	"strings"
 )
 
-const filename = "gravity.gob"
-
 type StorageService struct {
 	g *Gravity
 }
@@ -18,8 +16,8 @@ func newStorageService(g *Gravity) *StorageService {
 	}
 }
 
-func (s *StorageService) readStorage(fname string) (c *Credentials, err error) {
-	file, err := os.Open(fname)
+func readStorage(filename string) (c *Credentials, err error) {
+	file, err := os.Open(filename)
 	if err != nil {
 		return
 	}
@@ -35,15 +33,15 @@ func (s *StorageService) readStorage(fname string) (c *Credentials, err error) {
 	return
 }
 
-func (s *StorageService) writeStorage(fname string) (err error) {
-	file, err := os.Create(fname)
+func writeStorage(filename string, cred *Credentials) (err error) {
+	file, err := os.Create(filename)
 	if err != nil {
 		return
 	}
 	defer file.Close()
 
 	encoder := gob.NewEncoder(file)
-	err = encoder.Encode(s.g.State.cred)
+	err = encoder.Encode(cred)
 	if err != nil {
 		return
 	}
@@ -51,15 +49,20 @@ func (s *StorageService) writeStorage(fname string) (err error) {
 	return
 }
 
+func deleteStorage(filename string) (err error) {
+	err = os.Remove(filename)
+	return err
+}
+
 // load() transports local storage data into Gravity.State.
 // If Gravity.State doesn't match the local straage, returns an error.
-func (s *StorageService) load() (err error) {
-	c, err := s.readStorage(filename)
+func (s *StorageService) load(filename string) (err error) {
+	c, err := readStorage(filename)
 	if err != nil {
 		return
 	}
 
-	if !(c.identifier == s.g.State.cred.identifier && c.pwd == s.g.State.cred.pwd) {
+	if !(c.Identifier == s.g.State.cred.Identifier && c.Password == s.g.State.cred.Password) {
 		return ErrStorageDoesNotMatch
 	}
 
@@ -69,22 +72,22 @@ func (s *StorageService) load() (err error) {
 }
 
 // save() exports current Gravity.State as local storage data
-func (s *StorageService) save() error {
+func (s *StorageService) save(filename string) error {
 	// Check idtype just in case.
-	idtype := getIDType(s.g.State.cred.identifier)
+	idtype := getIDType(s.g.State.cred.Identifier)
 	if idtype == -1 {
 		return ErrInvalidIdentifier
 	}
 
-	return s.writeStorage(filename)
+	return writeStorage(filename, s.g.State.cred)
 }
 
-func (s *StorageService) createOneAndSave() error {
+func (s *StorageService) createOneAndSave(filename string) error {
 	gaid, _ := generateUUID()
 	uuid, _ := generateUUID()
 
-	s.g.State.cred.gaid = gaid
-	s.g.State.cred.uuid = strings.ToUpper(uuid)
+	s.g.State.cred.GAID = gaid
+	s.g.State.cred.GAID = strings.ToUpper(uuid)
 
-	return s.save()
+	return s.save(filename)
 }

@@ -1,30 +1,34 @@
 package gravity
 
 type Credentials struct {
-	idtype     int
-	identifier string
-	pwd        string
-	gaid       string
-	uuid       string
+	IdentifierType int
+	Identifier     string
+	Password       string
+	GAID           string
+	UUID           string
 }
 
 type Device struct {
-	simCountry  string
-	device      string
-	sysVer      string
-	referrer    string
-	zone        string
-	appVerCode  string
-	sysLang     string
-	appVer      string
-	langV2      string
-	country     string
-	brand       string
-	sdkVer      string
-	userCountry string
-	pkg         string
-	product     string
-	model       string
+	simCountry  string `json:"sim_country"`
+	device      string `json:"device"`
+	sysVer      string `json:"system_version"`
+	sign        string `json:"sign"`
+	referrer    string `json:"referrer"`
+	zone        string `json:"zone"`
+	idfa        string `json:"idfa"`
+	appVerCode  string `json:"app_version_code"`
+	timestamp   string `json:"ts"`
+	sysLang     string `json:"sys_lang"`
+	appVer      string `json:"app_version"`
+	langV2      string `json:"languageV2"`
+	uwd         string `json:"uwd"`
+	country     string `json:"country"`
+	brand       string `json:"brand"`
+	sdkVer      string `json:"sdk_version"`
+	userCountry string `json:"user_country"`
+	pkg         string `json:"pkg"`
+	product     string `json:"product"`
+	model       string `json:"model"`
 }
 
 type State struct {
@@ -36,22 +40,26 @@ type State struct {
 func NewState(identifier string, password string, idtype int) *State {
 	return &State{
 		cred: &Credentials{
-			idtype:     idtype,
-			identifier: identifier,
-			pwd:        password,
-			gaid:       "",
-			uuid:       "",
+			IdentifierType:     idtype,
+			Identifier: identifier,
+			Password:        password,
+			GAID:       "",
+			UUID:       "",
 		},
 		device: &Device{
 			simCountry:  "JP",
 			device:      "android",
 			sysVer:      "7.1.2",
+			sign:        "",
 			referrer:    "Organic",
 			zone:        "9",
+			idfa:        "",
 			appVerCode:  "375",
+			timestamp:   "",
 			sysLang:     "ja",
 			appVer:      "9.2.0",
 			langV2:      "ja",
+			uwd:         "",
 			country:     "JP",
 			brand:       "samsung",
 			sdkVer:      "25",
