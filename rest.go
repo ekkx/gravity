@@ -90,8 +90,6 @@ func (g *Gravity) requestWithForm(method, path string, body interface{}) (respon
 }
 
 func (g *Gravity) request(method, endpoint, contentType string, requestData interface{}) (r interface{}, err error) {
-	g.state.device.IDFA = encrypt(g.state.cred.GAID)
-	g.state.device.UWD = encrypt(g.state.cred.UUID)
 	g.state.device.Timestamp = getstrts(time.Now().Unix())
 
 	di := structToMapWithJSON(g.state.device)

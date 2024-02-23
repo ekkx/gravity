@@ -46,9 +46,7 @@ func structToMapWithJSON(data interface{}) map[string]string {
 	Unmarshal(b, &result)
 
 	for key, value := range result {
-		if value != nil && value != "" {
-			strResult[key] = fmt.Sprintf("%v", value)
-		}
+		strResult[key] = fmt.Sprintf("%v", value)
 	}
 
 	return strResult

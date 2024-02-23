@@ -88,6 +88,8 @@ func (g *Gravity) init() (err error) {
 		}
 	}
 
+	g.Storage.prepareState()
+
 	if g.state.cred.Token == "" {
 		token, err := g.authenticate()
 		if err != nil {

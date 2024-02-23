@@ -95,3 +95,8 @@ func (s *StorageService) CreateOneAndSave() error {
 func (s *StorageService) Remove() error {
 	return deleteStorage(s.g.storageFilename)
 }
+
+func (s *StorageService) prepareState() {
+	s.g.state.device.IDFA = encrypt(s.g.state.cred.GAID)
+	s.g.state.device.UWD = encrypt(s.g.state.cred.UUID)
+}
