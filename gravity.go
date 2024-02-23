@@ -22,12 +22,14 @@ type Gravity struct {
 }
 
 type GravityConfig struct {
-	client *http.Client
+	client          *http.Client
+	storageFilename string
 }
 
 func newGravityConfig() *GravityConfig {
 	return &GravityConfig{
-		client: &http.Client{Timeout: 20 * time.Second},
+		client:          &http.Client{Timeout: 20 * time.Second},
+		storageFilename: "secret.gob",
 	}
 }
 
@@ -42,6 +44,13 @@ func WithClient(client *http.Client) GravityOption {
 	}
 }
 
+// WithStorageFilename changes the filename used for the storage.
+func WithStorageFilename(filename string) GravityOption {
+	return func(cfg *GravityConfig) {
+		cfg.storageFilename = filename
+	}
+}
+
 func New(identifier string, password string, options ...GravityOption) (g *Gravity, err error) {
 	cfg := newGravityConfig()
 	for _, opt := range options {
@@ -51,7 +60,7 @@ func New(identifier string, password string, options ...GravityOption) (g *Gravi
 	g = &Gravity{
 		client:           cfg.client,
 		state:            NewState(identifier, password, getLoginType(identifier)),
-		storageFilename:  "gravity.gob",
+		storageFilename:  cfg.storageFilename,
 		retryOnRateLimit: true,
 		maxRestRetries:   3,
 	}
