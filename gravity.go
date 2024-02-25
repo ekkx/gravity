@@ -77,9 +77,8 @@ func New(identifier string, password string, options ...GravityOption) (g *Gravi
 func (g *Gravity) init() (err error) {
 	g.Common = newCommonService(g)
 	g.Feed = newFeedService(g)
+    g.Storage = newStorageService(g)
 	g.User = newUserService(g)
-
-	g.Storage = newStorageService(g)
 
 	// Initialize the storage
 	err = g.Storage.Load()

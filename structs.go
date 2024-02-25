@@ -268,6 +268,38 @@ type MBTIExam struct {
 	CompleteStatus     int    `json:"complete_status"`
 }
 
-type Feed struct {
-    
+type FeedRecommendList struct {
+	HashtagList HashtagList     `json:"high_tag"`
+	HcInfo      string          `json:"hc_info"`
+	IsNew       int             `json:"is_new"`
+	LastID      string          `json:"last_id"`
+	List        []FeedRecommend `json:"list"`
+	TagID       string          `json:"tag_id"`
+	Type        string          `json:"type"`
 }
+
+type HashtagList struct {
+}
+
+type FeedRecommend struct {
+	ContentFeed       Feed              `json:"content_feed"`
+	ContentFeedBanner ContentFeedBanner `json:"content_feed_banner"`
+	ContentFeedGuide  map[string]string `json:"content_feed_guide"`
+	RecommendUsers    RecommendUsers    `json:"content_user"`
+	ContentVoice      ContentVoice      `json:"content_voice"`
+	FollowRecommend   FollowRecommend   `json:"follow_recommend"`
+	StarInfo          Star              `json:"star_info"`
+	Type              string            `json:"type"`
+}
+
+type ContentFeedBanner struct{}
+
+type RecommendUsers struct{}
+
+type ContentVoice struct{}
+
+type FollowRecommend struct{}
+
+type Star struct{}
+
+type Feed struct{}
