@@ -43,12 +43,12 @@ func (s *UserService) loginWithEmail(email, password string) (st LoginData, err 
 	address := encrypt(email)
 	pwd := encrypt(password)
 
-	response, err := s.g.requestWithForm("POST", EndpointUserEmailLogin, &LoginWithEmailParams{Address: address, Password: pwd})
+	resp, err := s.g.requestWithForm("POST", EndpointUserEmailLogin, &LoginWithEmailParams{Address: address, Password: pwd})
 	if err != nil {
 		return
 	}
 
-	err = unmarshal(response, &st)
+	err = unmarshal(resp, &st)
 
 	return
 }

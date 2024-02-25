@@ -267,3 +267,7 @@ type MBTIExam struct {
 	CharacterAttribute string `json:"character_attribute"`
 	CompleteStatus     int    `json:"complete_status"`
 }
+
+type Feed struct {
+    
+}
