@@ -17,6 +17,7 @@ type Gravity struct {
 	maxRestRetries   int
 
 	Common  *CommonService
+	Feed    *FeedService
 	Storage *StorageService
 	User    *UserService
 }
@@ -75,6 +76,7 @@ func New(identifier string, password string, options ...GravityOption) (g *Gravi
 
 func (g *Gravity) init() (err error) {
 	g.Common = newCommonService(g)
+	g.Feed = newFeedService(g)
 	g.User = newUserService(g)
 
 	g.Storage = newStorageService(g)

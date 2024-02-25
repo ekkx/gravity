@@ -25,5 +25,11 @@ func TestGravity(t *testing.T) {
 		return
 	}
 
-	fmt.Println(g.state.cred)
+	feed, err := g.Feed.RecommendFeedList()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	fmt.Println(feed)
 }
