@@ -17,7 +17,7 @@ type IsEmailRegisteredParams struct {
 func (s *UserService) isEmailRegistered(email string) bool {
 	address := encrypt(email)
 
-	_, err := s.g.requestWithForm("POST", EndpointEmailIsRegistered, &IsEmailRegisteredParams{Address: address})
+	_, err := s.g.requestWithForm("POST", EndpointUserEmailIsRegistered, &IsEmailRegisteredParams{Address: address})
 
 	return err == nil
 }
@@ -29,7 +29,7 @@ type IsPhoneNumberRegisteredParams struct {
 func (s *UserService) isPhoneNumberRegistered(number string) bool {
 	pnum := encrypt(number)
 
-	_, err := s.g.requestWithForm("POST", EndpointMobileIsRegistered, &IsPhoneNumberRegisteredParams{Number: pnum})
+	_, err := s.g.requestWithForm("POST", EndpointUserMobileIsRegistered, &IsPhoneNumberRegisteredParams{Number: pnum})
 
 	return err == nil
 }
@@ -43,7 +43,7 @@ func (s *UserService) loginWithEmail(email, password string) (st LoginData, err 
 	address := encrypt(email)
 	pwd := encrypt(password)
 
-	response, err := s.g.requestWithForm("POST", EndpointEmailLogin, &LoginWithEmailParams{Address: address, Password: pwd})
+	response, err := s.g.requestWithForm("POST", EndpointUserEmailLogin, &LoginWithEmailParams{Address: address, Password: pwd})
 	if err != nil {
 		return
 	}
