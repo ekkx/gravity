@@ -14,12 +14,18 @@ type IsEmailRegisteredParams struct {
 	Address string `json:"address"`
 }
 
-func (s *UserService) isEmailRegistered(email string) bool {
+func (s *UserService) isEmailRegistered(email string) (isreg bool, err error) {
 	address := encrypt(email)
 
-	_, err := s.g.requestWithForm("POST", EndpointUserEmailIsRegistered, &IsEmailRegisteredParams{Address: address})
+	resp, err := s.g.requestWithForm("POST", EndpointUserEmailIsRegistered, &IsEmailRegisteredParams{Address: address})
+	if err != nil {
+		if resp.ErrNo != ErrNoEmailAddressOrPassword {
+			return false, err
+		}
+		return false, nil
+	}
 
-	return err == nil
+	return true, nil
 }
 
 type IsPhoneNumberRegisteredParams struct {
@@ -29,6 +35,7 @@ type IsPhoneNumberRegisteredParams struct {
 func (s *UserService) isPhoneNumberRegistered(number string) bool {
 	pnum := encrypt(number)
 
+	// isEmailRegistered のように修正する
 	_, err := s.g.requestWithForm("POST", EndpointUserMobileIsRegistered, &IsPhoneNumberRegisteredParams{Number: pnum})
 
 	return err == nil

@@ -77,7 +77,7 @@ func New(identifier string, password string, options ...GravityOption) (g *Gravi
 func (g *Gravity) init() (err error) {
 	g.Common = newCommonService(g)
 	g.Feed = newFeedService(g)
-    g.Storage = newStorageService(g)
+	g.Storage = newStorageService(g)
 	g.User = newUserService(g)
 
 	// Initialize the storage
@@ -106,9 +106,15 @@ func (g *Gravity) init() (err error) {
 func (g *Gravity) authenticate() (token string, err error) {
 	switch g.state.cred.LoginType {
 	case LoginTypeEmail:
-		if !(g.User.isEmailRegistered(g.state.cred.Identifier)) {
+		isreg, err := g.User.isEmailRegistered(g.state.cred.Identifier)
+		if err != nil {
+			return "", err
+		}
+
+		if !isreg {
 			return "", ErrAuthenticationFailed
 		}
+
 		resp, err := g.User.loginWithEmail(g.state.cred.Identifier, g.state.cred.Password)
 		if err != nil {
 			return "", err

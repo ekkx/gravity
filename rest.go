@@ -77,19 +77,19 @@ func newRestError(req *http.Request, resp *http.Response, body []byte) *RESTErro
 	return restErr
 }
 
-func (g *Gravity) requestWithQuery(method, path string, queryParams interface{}) (response interface{}, err error) {
+func (g *Gravity) requestWithQuery(method, path string, queryParams interface{}) (response *APIErrorMessage, err error) {
 	return g.request(method, path, "", queryParams)
 }
 
-func (g *Gravity) requestWithJSON(method, path string, body interface{}) (response interface{}, err error) {
-	return g.request(method, path, "application/json; charset=utf-8", body)
-}
-
-func (g *Gravity) requestWithForm(method, path string, body interface{}) (response interface{}, err error) {
+func (g *Gravity) requestWithForm(method, path string, body interface{}) (response *APIErrorMessage, err error) {
 	return g.request(method, path, "application/x-www-form-urlencoded; charset=utf-8", body)
 }
 
-func (g *Gravity) request(method, endpoint, contentType string, requestData interface{}) (r interface{}, err error) {
+func (g *Gravity) requestWithJSON(method, path string, body interface{}) (response *APIErrorMessage, err error) {
+	return g.request(method, path, "application/json; charset=utf-8", body)
+}
+
+func (g *Gravity) request(method, endpoint, contentType string, requestData interface{}) (response *APIErrorMessage, err error) {
 	g.state.device.Timestamp = getstrts(time.Now().Unix())
 
 	di := structToMapWithJSON(g.state.device)
@@ -139,8 +139,7 @@ func (g *Gravity) request(method, endpoint, contentType string, requestData inte
 	req.Header.Set("Content-Type", contentType)
 	req.Header.Set("User-Agent", "okhttp/3.12.13")
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	resp, err := g.client.Do(req)
 	if err != nil {
 		return
 	}
@@ -156,10 +155,9 @@ func (g *Gravity) request(method, endpoint, contentType string, requestData inte
 		return
 	}
 
-	var response *APIErrorMessage
 	err = Unmarshal(respBody, &response)
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	if response.ErrNo != ErrNoSuccess {
@@ -167,5 +165,5 @@ func (g *Gravity) request(method, endpoint, contentType string, requestData inte
 		return response, err
 	}
 
-	return response.Data, nil
+	return response, nil
 }
