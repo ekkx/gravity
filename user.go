@@ -46,7 +46,7 @@ type LoginWithEmailParams struct {
 	Password string `json:"pwd"`
 }
 
-func (s *UserService) loginWithEmail(email, password string) (st LoginData, err error) {
+func (s *UserService) loginWithEmail(email, password string) (st *LoginData, err error) {
 	address := encrypt(email)
 	pwd := encrypt(password)
 
