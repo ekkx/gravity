@@ -52,7 +52,7 @@ func WithStorageFilename(filename string) GravityOption {
 	}
 }
 
-func New(identifier string, password string, options ...GravityOption) (g *Gravity, err error) {
+func New(identifier, password string, options ...GravityOption) (g *Gravity, err error) {
 	cfg := newGravityConfig()
 	for _, opt := range options {
 		opt(cfg)
@@ -74,17 +74,16 @@ func New(identifier string, password string, options ...GravityOption) (g *Gravi
 	return
 }
 
-func (g *Gravity) init() (err error) {
+func (g *Gravity) init() error {
 	g.Common = newCommonService(g)
 	g.Feed = newFeedService(g)
 	g.Storage = newStorageService(g)
 	g.User = newUserService(g)
 
 	// Initialize the storage
-	err = g.Storage.Load()
+	err := g.Storage.Load()
 	if err != nil {
-		err2 := g.Storage.CreateOneAndSave()
-		if err2 != nil {
+		if err2 := g.Storage.CreateOneAndSave(); err2 != nil {
 			return err2
 		}
 	}
@@ -103,7 +102,7 @@ func (g *Gravity) init() (err error) {
 }
 
 // authenticate() authenticates the user with Gravity.State.credentials.
-func (g *Gravity) authenticate() (token string, err error) {
+func (g *Gravity) authenticate() (string, error) {
 	switch g.state.cred.LoginType {
 	case LoginTypeEmail:
 		isreg, err := g.User.isEmailRegistered(g.state.cred.Identifier)
