@@ -99,7 +99,10 @@ func (g *Gravity) request(method, endpoint, contentType string, requestData inte
 		rd["token"] = g.state.cred.Token
 	}
 
-	rd["sign"], _ = generateSignature(rd)
+	rd["sign"], err = generateSignature(rd)
+	if err != nil {
+		return nil, err
+	}
 
 	var req *http.Request
 
@@ -125,7 +128,9 @@ func (g *Gravity) request(method, endpoint, contentType string, requestData inte
 	}
 
 	req.Header.Set("Host", "api.gravity.place")
-	req.Header.Set("Content-Type", contentType)
+	if contentType != "" {
+		req.Header.Set("Content-Type", contentType)
+	}
 	req.Header.Set("User-Agent", "okhttp/3.12.13")
 
 	resp, err := g.client.Do(req)
