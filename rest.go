@@ -1,7 +1,6 @@
 package gravity
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -85,10 +84,6 @@ func (g *Gravity) requestWithForm(method, path string, body interface{}) (respon
 	return g.request(method, path, "application/x-www-form-urlencoded; charset=utf-8", body)
 }
 
-func (g *Gravity) requestWithJSON(method, path string, body interface{}) (response *APIErrorMessage, err error) {
-	return g.request(method, path, "application/json; charset=utf-8", body)
-}
-
 func (g *Gravity) request(method, endpoint, contentType string, requestData interface{}) (response *APIErrorMessage, err error) {
 	g.state.device.Timestamp = getstrts(time.Now().Unix())
 
@@ -121,12 +116,6 @@ func (g *Gravity) request(method, endpoint, contentType string, requestData inte
 			formData.Add(k, v)
 		}
 		req, err = http.NewRequest(method, endpoint, strings.NewReader(formData.Encode()))
-	case "application/json; charset=utf-8":
-		jsonData, err := json.Marshal(rd)
-		if err != nil {
-			return nil, err
-		}
-		req, err = http.NewRequest(method, endpoint, bytes.NewBuffer(jsonData))
 	default:
 		return nil, fmt.Errorf("invalid content type %s", contentType)
 	}
