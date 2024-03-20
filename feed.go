@@ -1,7 +1,5 @@
 package gravity
 
-import "fmt"
-
 type FeedService struct {
 	g *Gravity
 }
@@ -18,13 +16,11 @@ type RecommendFeedListParams struct {
 	LogID  int    `json:"log_id"`
 }
 
-func (s *FeedService) RecommendFeedList() (st interface{}, err error) {
-	resp, err := s.g.requestWithQuery("GET", EndpointFeedRecommendFeedListV2, nil)
+func (s *FeedService) RecommendFeedList(params *RecommendFeedListParams) (st interface{}, err error) {
+	resp, err := s.g.requestWithQuery("GET", EndpointFeedRecommendFeedListV2, params)
 	if err != nil {
 		return nil, err
 	}
-
-	fmt.Println(resp)
 
 	return resp, nil
 }

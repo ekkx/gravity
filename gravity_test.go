@@ -8,15 +8,9 @@ import (
 )
 
 var (
-	envEmail    string
-	envPassword string
+	envEmail    = os.Getenv("TEST_GRAVITY_EMAIL")
+	envPassword = os.Getenv("TEST_GRAVITY_PASSWORD")
 )
-
-func init() {
-	readEnv()
-	envEmail = os.Getenv("TEST_EMAIL")
-	envPassword = os.Getenv("TEST_PASSWORD")
-}
 
 func TestGravity(t *testing.T) {
 	g, err := New(envEmail, envPassword, WithClient(&http.Client{}))
@@ -25,7 +19,7 @@ func TestGravity(t *testing.T) {
 		return
 	}
 
-	feed, err := g.Feed.RecommendFeedList()
+	feed, err := g.Feed.RecommendFeedList(nil)
 	if err != nil {
 		fmt.Println(err)
 		return
