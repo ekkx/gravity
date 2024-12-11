@@ -4,13 +4,13 @@
 
 Golang API wrapper for [Gravity](https://gravity.place/).
 
-## Getting Started
-
 ### Installation
 
 ```sh-session
 go get github.com/ekkx/gravity
 ```
+
+⚠️ This project is currently under construction. ⚠️
 
 ### Usage
 
